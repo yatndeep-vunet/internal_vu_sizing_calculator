@@ -1,0 +1,120 @@
+
+
+/* For WebKit browsers */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* For Firefox */
+html {
+    scrollbar-width: thin; /* Options: auto, thin, or none */
+    scrollbar-color: #888 #f1f1f1; /* thumb color and track color */
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid black;
+}
+
+th, td {
+    padding: 10px;
+    
+}
+
+
+.toggle {
+    display: none;
+}
+
+.toggle + .toggle-label {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    background-color: #e4e4e7;
+    border-radius: 9999px;
+    transition: background-color 0.2s;
+}
+
+.toggle + .toggle-label:before {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 9999px;
+    transition: transform 0.2s;
+}
+
+.toggle:checked + .toggle-label {
+    background-color: #4ade80; /* Green */
+}
+
+.toggle:checked + .toggle-label:before {
+    transform: translateX(26px);
+}
+
+
+.btn-enabled {
+    background-color: #3B82F6; /* Blue background */
+    color: white; /* White text */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+.btn-disabled {
+    background-color: #A1A1A1; /* Grey background */
+    color: #E5E5E5; /* Light grey text */
+    cursor: not-allowed; /* Not allowed cursor */
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: pointer; /* Change cursor to pointer for better UX */
+}
+
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: auto; /* Width of the tooltip */
+    background-color: black; /* Background color */
+    color: #fff; /* Text color */
+    text-align: center;
+    border-radius: 5px; /* Rounded corners */
+    padding: 5px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 100%; /* Position above the tooltip */
+    left: 50%;
+    margin-left: -80px; /* Center the tooltip */
+    opacity: 0; /* Make it invisible */
+    transition: opacity 0.3s; /* Fade-in effect */
+}
+
+.tooltip:hover .tooltiptext {
+    visibility: visible; /* Show the tooltip */
+    opacity: 1; /* Make it visible */
+}
+

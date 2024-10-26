@@ -1,0 +1,23 @@
+1. Put Input in the Sheet and get the result  (Batch Update) - Done
+
+2. Update template with user's input - Done 
+
+3. Result Tables :- FINAL SIZING SUMMARY - Done
+
+4. SERVICE LEVEL SIZING - Done
+
+5. To Put the value in General Sheets - Done
+
+
+
+
+
+
+
+6. Save Template (Means saving the inputs)
+
+7. Import Input Values 
+
+8. Export PDF / Excel (Results) 
+
+

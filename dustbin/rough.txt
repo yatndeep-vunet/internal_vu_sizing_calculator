@@ -1,0 +1,9 @@
+{'vuCoreML': {'formData': [{'name': 'vuCoreML_Num of Signals', 'value': '100'},
+ {'name': 'vuCoreML_Approx Num dimensions per signal', 'value': '100'}, 
+ {'name': 'vuCoreML_Num Fields Per Signal', 'value': '200'}, 
+ {'name': 'vuCoreML_LLM based Analytics', 'value': 'on'}]}}
+
+
+
+ 
+{'vuCoreML': {'formData': [{'name': 'vuCoreML_Num of Signals', 'value': '100'}, {'name': 'vuCoreML_Approx Num dimensions per signal', 'value': '100'}, {'name': 'vuCoreML_Num Fields Per Signal', 'value': '200'}, {'name': 'vuCoreML_LLM based Analytics', 'value': 'on'}]}}

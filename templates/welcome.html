@@ -1,0 +1,35 @@
+
+    {% include 'partials/header.html' %}
+    {% if page_info.user_info %}
+            {% if page_info.user_info.user_assets %}
+            <div class="w-[80%] mx-auto mt-10">
+                <p>Your Templates:</p>
+                <ul>
+                    {% for asset in page_info.user_info.user_assets %}
+                        <li>
+                            <a href="{{ url_for('template', template_name=asset['template_name']) }}" class="text-blue-600 underline">
+                                {{ asset['template_name'] }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No templates available.</p>
+            {% endif %}
+            </div>
+           
+       
+        <form action="/create_template" method="POST" class="flex flex-col space-y-4 w-fit w-[60%] border-2 border-gray-500 mx-auto p-5">
+            <p class="text-2xl">Create a new template:</p>
+            <label for="template_name">Template Name:</label>
+            <input type="text" id="template_name" name="template_name" required class="border-2 border-gray-400 rounded">
+            <button type="submit" class="bg-blue-600 text-white px-5 py-2 w-full rounded">Create Template</button>
+        </form>      
+        </a>
+
+    {% else %}
+        
+    {% endif %}
+</body>
+
+</html>

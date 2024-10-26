@@ -1,0 +1,239 @@
+
+{% include 'partials/header.html' %}
+  <section class="flex justify-between lg:flex-row flex-col">
+    <form method="POST" class="lg:w-[50%] px-5 w-[99%] shadow-2xl rounded p-2 overflow-y-scroll h-[90vh]" id="dataForm">
+        {% for sheet_name, fields in page_info.data.items() %}
+            <div class="lg:w-[20%] flex justify-between my-4 w-[95%] ">
+                {% if sheet_name not in ["GeneralInputs", "DataRetention"] %}
+                    <h2>{{ sheet_name }}</h2> 
+                    <label>
+                        <input type="checkbox" class="toggle" id="toggle-{{sheet_name}}" onclick="toggle_form('{{sheet_name}}')" />
+                        <span class="toggle-label"></span>
+                    </label>  
+                {% endif %}
+            </div>
+
+            <!-- Always visible for GeneralInputs and DataRetention -->
+            <fieldset id="form-{{sheet_name}}" {% if sheet_name in ["GeneralInputs", "DataRetention"] %}style="display: block;"{% else %}style="display: none;"{% endif %} class="border rounded border-gray-300 px-5 py-2">  
+                <h1 class="text-xl font-bold text-center">
+                    {% if sheet_name == "GeneralInputs" %}
+                        General Inputs
+                    {% elif sheet_name == "DataRetention" %}
+                        Data Retention
+                    {% else %}
+                        {{ sheet_name }}
+                    {% endif %}
+                </h1>
+                {% for field in fields %}
+                <div class="flex space-x-2">
+                    <label for="{{ field.form_input }}">{{ field.form_input }}</label><br>
+                    <span class="tooltip">?
+                        <span class="tooltiptext"> <small>{{ field.help_text }}</small></span>
+                    </span>
+                </div>
+                    {% if field.data_type == "Numeric" %}
+                        <input type="number" id="{{ field.form_input }}" name="{{ sheet_name }}_{{ field.form_input }}" class="border-2 border-gray-400 w-full p-2 my-2" value={{field.value}} min=0><br><br>
+                    {% elif field.data_type == "Boolean" %}
+                        <input type="checkbox" id="{{ field.form_input }}" name="{{ sheet_name }}_{{ field.form_input }}" class="checkbox"><br><br>
+                    {% else %}
+                        <input type="text" id="{{ field.form_input }}" name="{{ sheet_name }}_{{ field.form_input }}" class="border-2 border-gray-400 w-full p-2 my-2"><br><br>
+                    {% endif %}
+                {% endfor %}
+                <hr>  
+            </fieldset>
+        {% endfor %}
+        <button type="submit" class="w-full px-5 py-2 my-4 rounded btn-disabled" id="main_form" disabled>Submit</button>
+    </form>     
+<div id="result" class="w-[50%] w-[99%] overflow-auto">
+    <!-- Tab Navigation -->
+<h1 class="text-center text-2xl font-bold my-4">Sizing Information</h1>
+<div class="mx-auto w-[95%] bg-gray-700 text-white">
+    <div class="flex justify-around py-4 cursor-pointer">
+        <div id="final_sizing_tab" class="tab-title text-center text-lg font-bold py-2 px-5 bg-blue-600 rounded shadow-xl">
+           Final Sizing
+        </div>
+        <div id="service_level_sizing_tab" class="tab-title text-center text-lg font-bold py-2 px-5 rounded shadow-xl">
+            Service Level Sizing
+        </div>
+    </div>
+</div>
+
+<!-- First Table -->
+<div id="final_sizing_table" class="tab-content my-4">
+   
+</div>
+
+<!-- Second Table -->
+<div id="service_level_sizing_table" class="tab-content my-4 hidden">
+   
+</div>
+
+<div>
+    </section> 
+</body>
+<script>
+    var formFlags = {
+        vuLogx: false,
+        vuBJM: false,
+        vuInfra: false,
+        vuTraces: false,
+        vuCoreML: false,
+        DataRetention: true,
+        GeneralInputs: true
+    };
+
+    function toggle_form(form_name) {
+        var formSection = document.getElementById("form-" + form_name);
+        
+        // Toggle the display style of the section
+        if (formSection.style.display === "none") {
+            formSection.style.display = "block"; // Show the section
+            setInputsRequired(formSection, true); // Set inputs to required
+        } else {
+            formSection.style.display = "none"; // Hide the section
+            setInputsRequired(formSection, false); // Remove required from inputs
+        }
+        
+        // Toggle the flag in formFlags
+        formFlags[form_name] = !formFlags[form_name];
+        
+        // Check if submit button should be enabled
+        checkSubmitButton();
+        console.log(formFlags);
+    }
+
+    function setInputsRequired(section, isRequired) {
+        // Find all inputs in the section and set required attribute
+        $(section).find('input').each(function() {
+            if ($(this).attr('type') !== 'checkbox') {
+                $(this).prop('required', isRequired); // Set required
+            }
+        });
+    }
+
+    function checkSubmitButton() {
+        let isAnyInputValid = false;
+
+        for (const key in formFlags) {
+            if (formFlags[key]) {
+                // Check for valid inputs in the visible sections
+                const inputs = $(`#form-${key}`).find('input');
+                inputs.each(function() {
+                    if ($(this).is(':checkbox')) {
+                        // Checkbox is valid if checked
+                        if ($(this).is(':checked')) {
+                            isAnyInputValid = true;
+                        }
+                    } else {
+                        // Numeric and text inputs are valid if they have a value
+                        if ($(this).val().trim() !== '') {
+                            isAnyInputValid = true;
+                        }
+                    }
+                });
+            }
+        }
+
+        // Enable or disable the submit button based on the validity of the inputs
+        $('#main_form').prop('disabled', !isAnyInputValid);
+        
+        // Toggle button styles based on state
+        if (isAnyInputValid) {
+            $('#main_form').removeClass('btn-disabled').addClass('btn-enabled');
+        } else {
+            $('#main_form').removeClass('btn-enabled').addClass('btn-disabled');
+        }
+    }
+
+    $('input').on('input change', function() {
+        checkSubmitButton(); // Check button validity on input changes
+    });
+
+    $('#main_form').on('click', function(e) {
+        e.preventDefault(); // Prevent default form submission
+        var data = {}; // Initialize an empty object to store form data
+        $('#loader').fadeIn('fast'); 
+        // Loop over formFlags to gather data from selected sections
+        for (var key in formFlags) {
+            if (formFlags[key]) {
+                // Serialize each section’s form data as an array of {name, value} objects
+                var formData = $(`#form-${key}`).serializeArray();
+                
+                // Add each section to `data` with the required structure
+                data[key] = { "formData": formData };
+            }
+        }
+    
+        $.ajax({
+            type: 'POST',
+            url: '/calculate',
+            contentType: 'application/json', // Set content type to JSON
+            data: JSON.stringify(data), // Send data as a JSON string
+            success: function(response) {
+                getting_results();
+            },
+            error: function(xhr, status, error) {
+                $('#loader').fadeIn('slow');
+                console.error("AJAX Error: ", error); // Log any error
+            }
+        });
+    });
+
+    // Result handling
+    // Result for Service Level Sizing
+    function getting_results() {
+        $('#loader').fadeIn('fast');
+    
+        // Define both AJAX requests as promises
+        const serviceLevelSizingRequest = $.ajax({
+            type: 'GET',
+            url: '/results/service_level_sizing',
+        });
+    
+        const finalSizingRequest = $.ajax({
+            type: 'GET',
+            url: '/results/final_sizing',
+        });
+    
+        // Execute both AJAX requests concurrently
+        Promise.all([serviceLevelSizingRequest, finalSizingRequest])
+            .then((responses) => {
+                // Both requests were successful
+                const [serviceLevelResponse, finalSizingResponse] = responses;
+                $('#service_level_sizing_table').html(serviceLevelResponse);
+                $('#final_sizing_table').html(finalSizingResponse);
+                $('#loader').fadeOut('slow');  // Hide the loader when both requests are complete
+                console.log("All requests completed successfully.");
+            })
+            .catch((error) => {
+                // One or both requests failed
+                console.error("AJAX Error: ", error);
+                $('#loader').fadeOut('slow');  // Hide the loader on error as well
+            });
+    }
+    
+     // Tab functionality
+     const final_sizing_tab = document.getElementById('final_sizing_tab');
+     const service_level_sizing_tab = document.getElementById('service_level_sizing_tab');
+     const final_sizing_table = document.getElementById('final_sizing_table');
+     const service_level_sizing_table = document.getElementById('service_level_sizing_table');
+ 
+     // Function to switch tabs
+     function main_activateTab(tab, contentToShow, contentToHide) {
+         // Reset all tabs
+         final_sizing_tab.classList.remove('bg-blue-600');
+         service_level_sizing_tab.classList.remove('bg-blue-600');
+         // Highlight active tab
+         tab.classList.add('bg-blue-600');
+ 
+         // Show and hide tables
+         contentToShow.classList.remove('hidden');
+         contentToHide.classList.add('hidden');
+     }
+ 
+     // Event listeners for tabs
+     final_sizing_tab.addEventListener('click', () => main_activateTab(final_sizing_tab, final_sizing_table, service_level_sizing_table));
+     service_level_sizing_tab.addEventListener('click', () => main_activateTab(service_level_sizing_tab, service_level_sizing_table, final_sizing_table));
+    
+</script>
+</html>

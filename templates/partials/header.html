@@ -1,0 +1,82 @@
+<!-- Header partial -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>{{page_info.title}}</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<style>
+    
+</style>
+<body class="h-[100vh]">
+    <div id="loader" class="fixed inset-0 bg-white bg-opacity-75 flex justify-center items-center z-50">
+        <div class=" animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-blue-500"></div>
+    </div>
+    <header class="flex justify-between px-10 py-5 justify-center items-center bg-black text-white">
+        <h1 class="text-2xl">VuSizing Calculator</h1>
+        <nav class="flex">
+            <div class="flex">
+                {% if page_info.user_info %}
+                <div class="flex space-x-5 items-center">
+                    <h1>Hello {{ page_info.user_info.user_personal_info.given_name }}!</h1>
+                   
+                        <a href="/logout">
+                            <div class="bg-red-600 text-white px-5 py-2">
+                            Log out
+                            </div>
+                        </a>
+                </div>
+                {% else %}
+                 <a href="/signin" class="text-2xl font-bold">
+                    <div class="flex space-x-4 items-center bg-white text-black px-4 py-2 rounded">
+                        <p>Sign In with<p>
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/768px-Google_%22G%22_logo.svg.png" class="h-7 w-7">
+                    </div>
+                 </a>
+                {% endif %}
+            </div>
+          
+        </nav>
+    </header>
+<script>
+        function showToast(message) {
+            Toastify({
+                text: message, // Use the passed message
+                duration: 5000, // Duration in milliseconds
+                close: true, // Show close button
+                gravity: "top", // `top` or `bottom`
+                position: 'right', // `left`, `center`, or `right`
+                backgroundColor: "#333", // Dark background color
+                stopOnFocus: true, // Prevents dismissing of toast on hover
+                onClick: function(){} // Callback after click
+            }).showToast();
+        }
+
+        // Flask messages
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+                showToast("{{ message|escape }}"); // Pass flashed message to showToast
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        $(window).on('load', function () {
+            // Hide the loader after the page is fully loaded
+            $('#loader').fadeOut('slow');
+        });
+    
+        $(window).on('beforeunload', function () {
+            // Show the loader when the page starts unloading/loading
+            $('#loader').fadeIn('fast');
+        });
+    </script>
+
+</script>
+    

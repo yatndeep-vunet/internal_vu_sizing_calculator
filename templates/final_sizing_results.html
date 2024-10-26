@@ -1,0 +1,83 @@
+
+<!-- Tab Navigation -->
+<div class="mx-auto w-[95%] bg-gray-700 text-white">
+    <div class="flex justify-around py-4 cursor-pointer">
+        <div id="k8s_tab" class="tab-title text-center text-lg font-bold py-2 px-5 bg-blue-600 rounded shadow-xl">
+            Sizing on a Managed K8S Environment
+        </div>
+        <div id="vms_tab" class="tab-title text-center text-lg font-bold py-2 px-5 rounded shadow-xl">
+            Sizing on VMs
+        </div>
+    </div>
+</div>
+
+<!-- First Table -->
+<div id="k8s_table" class="tab-content my-4">
+    <table class="mx-auto mb-8 w-[95%]">
+        <thead>
+            <tr>
+                {% for header in headers_1 %}
+                    <th class="bg-gray-300 shadow-2xl p-2">{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows_1 %}
+                <tr>
+                    {% for item in row %}
+                        <td class="p-2 border">{{ item }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Second Table -->
+<div id="vms_table" class="tab-content my-4 hidden">
+    <table class="mx-auto w-[95%]">
+        <thead>
+            <tr>
+                {% for header in headers_2 %}
+                    <th class="bg-gray-300 shadow-2xl p-2">{{ header }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows_2 %}
+                <tr>
+                    {% for item in row %}
+                        <td class="p-2 border">{{ item }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    // Tab functionality
+    const k8s_tab = document.getElementById('k8s_tab');
+    const vms_tab = document.getElementById('vms_tab');
+    const k8s_table = document.getElementById('k8s_table');
+    const vms_table = document.getElementById('vms_table');
+
+    // Function to switch tabs
+    function activateTab(tab, contentToShow, contentToHide) {
+        // Reset all tabs
+        k8s_tab.classList.remove('bg-blue-600');
+        vms_tab.classList.remove('bg-blue-600');
+        // Highlight active tab
+        tab.classList.add('bg-blue-600');
+
+        // Show and hide tables
+        contentToShow.classList.remove('hidden');
+        contentToHide.classList.add('hidden');
+    }
+
+    // Event listeners for tabs
+    k8s_tab.addEventListener('click', () => activateTab(k8s_tab, k8s_table, vms_table));
+    vms_tab.addEventListener('click', () => activateTab(vms_tab, vms_table, k8s_table));
+</script>
+</body>
+</html>

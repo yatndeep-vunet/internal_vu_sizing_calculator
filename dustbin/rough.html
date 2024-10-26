@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Tabs</title>
+    <script src="https://cdn.tailwindcss.com/"></script>
+    <style>
+        /* Add underline animation */
+        .underline {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            background-color: blue;
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-center my-4 font-bold text-2xl">Shree Ganeshay Namah</h1>
+    <div class="mx-auto w-[80%] bg-gray-700 text-white relative">
+        <div class="flex py-5 justify-between px-2 relative">
+            <div class="px-5 py-2 rounded shadow-xl text-xl font-bold cursor-pointer" id="home">
+                <p>Home</p>
+            </div>
+            <div class="px-5 py-2 rounded shadow-xl text-xl font-bold cursor-pointer" id="about">
+                <p>About</p>
+            </div>
+            <div class="px-5 py-2 rounded shadow-xl text-xl font-bold cursor-pointer" id="service">
+                <p>Services</p>
+            </div>
+            <!-- Sliding underline element -->
+            <div id="underline" class="underline w-[33.33%]"></div>
+        </div>
+        <div id="content" class="text-center py-4">
+            <p>This is the content of the Home page</p>
+        </div>
+    </div>
+</body>
+<script>
+    const home = document.getElementById('home');
+    const about = document.getElementById('about');
+    const service = document.getElementById('service');
+    const content = document.getElementById('content');
+    const underline = document.getElementById('underline');
+
+    // Initialize active tab
+    let activeTab = home;
+    activeTab.style.backgroundColor = 'blue';
+
+    function activateTab(tab, contentText, index) {
+        // Reset previous active tab style
+        activeTab.style.backgroundColor = 'transparent';
+
+        // Set new active tab style
+        tab.style.backgroundColor = 'blue';
+        content.textContent = contentText;
+
+        // Move underline
+        underline.style.transform = `translateX(${index * 100}%)`;
+
+        // Update active tab
+        activeTab = tab;
+    }
+
+    home.addEventListener('click', () => activateTab(home, 'This is the content of the Home page', 0));
+    about.addEventListener('click', () => activateTab(about, 'This is the content of the About page', 1));
+    service.addEventListener('click', () => activateTab(service, 'This is the content of the Services page', 2));
+</script>
+</html>
