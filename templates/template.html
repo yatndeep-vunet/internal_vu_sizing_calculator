@@ -3,19 +3,21 @@
   <section class="flex justify-between lg:flex-row flex-col">
     <form method="POST" class="lg:w-[50%] px-5 w-[99%] shadow-2xl rounded p-2 overflow-y-scroll h-[90vh]" id="dataForm">
         {% for sheet_name, fields in page_info.data.items() %}
-            <div class="lg:w-[20%] flex justify-between my-4 w-[95%] ">
+            <div class="lg:w-[30%] flex justify-between my-4 w-[95%] ">
                 {% if sheet_name not in ["GeneralInputs", "DataRetention"] %}
-                    <h2>{{ sheet_name }}</h2> 
-                    <label>
-                        <input type="checkbox" class="toggle" id="toggle-{{sheet_name}}" onclick="toggle_form('{{sheet_name}}')" />
-                        <span class="toggle-label"></span>
-                    </label>  
+                    <div class="flex flex-1 justify-between w-full poppins-bold text-xl items-center">
+                        <h2 class="font-bold">{{ sheet_name }}</h2> 
+                        <label>
+                            <input type="checkbox" class="toggle" id="toggle-{{sheet_name}}" onclick="toggle_form('{{sheet_name}}')" />
+                            <span class="toggle-label"></span>
+                        </label>
+                    </div>
                 {% endif %}
             </div>
 
             <!-- Always visible for GeneralInputs and DataRetention -->
             <fieldset id="form-{{sheet_name}}" {% if sheet_name in ["GeneralInputs", "DataRetention"] %}style="display: block;"{% else %}style="display: none;"{% endif %} class="border rounded border-gray-300 px-5 py-2">  
-                <h1 class="text-xl font-bold text-center">
+                <h1 class="text-xl font-bold text-center poppins-bold">
                     {% if sheet_name == "GeneralInputs" %}
                         General Inputs
                     {% elif sheet_name == "DataRetention" %}
@@ -25,16 +27,20 @@
                     {% endif %}
                 </h1>
                 {% for field in fields %}
-                <div class="flex space-x-2">
-                    <label for="{{ field.form_input }}">{{ field.form_input }}</label><br>
-                    <span class="tooltip">?
-                        <span class="tooltiptext"> <small>{{ field.help_text }}</small></span>
-                    </span>
-                </div>
+                {% if field.data_type != "Hidden" %}
+                    <div class="flex space-x-2">
+                        <label for="{{ field.form_input }}">{{ field.form_input }}</label><br>
+                        <span class="tooltip">?
+                            <span class="tooltiptext"> <small>{{ field.help_text }}</small></span>
+                        </span>
+                    </div>
+                {% endif %}
                     {% if field.data_type == "Numeric" %}
-                        <input type="number" id="{{ field.form_input }}" name="{{ sheet_name }}_{{ field.form_input }}" class="border-2 border-gray-400 w-full p-2 my-2" value={{field.value}} min=0><br><br>
+                        <input type="number" id="{{ field.form_input }}" name="{{ sheet_name }}_{{ field.form_input }}" class="border-2 border-gray-400 w-full p-2 my-2" value={{field.value}} min={{field.value}}><br><br>
                     {% elif field.data_type == "Boolean" %}
-                        <input type="checkbox" id="{{ field.form_input }}" name="{{ sheet_name }}_{{ field.form_input }}" class="checkbox"><br><br>
+                       <input type="checkbox" id="{{ field.form_input }}" name="{{ sheet_name }}_{{ field.form_input }}" class="checkbox" value="TRUE" {% if field.value == "TRUE" %}checked{% endif %} onclick="this.value=this.checked ? 'TRUE' : 'FALSE'"><br><br>
+                    {% elif field.data_type == "Hidden" %}
+                        <input type="hidden" id="{{ field.form_input }}" name="{{ sheet_name }}_{{ field.form_input }}" value={{field.value}}><br><br>
                     {% else %}
                         <input type="text" id="{{ field.form_input }}" name="{{ sheet_name }}_{{ field.form_input }}" class="border-2 border-gray-400 w-full p-2 my-2"><br><br>
                     {% endif %}
@@ -43,6 +49,7 @@
             </fieldset>
         {% endfor %}
         <button type="submit" class="w-full px-5 py-2 my-4 rounded btn-disabled" id="main_form" disabled>Submit</button>
+        <button class="w-full px-5 py-2 my-4 rounded btn-disabled" id="save_inputs" disabled>Save Inputs</button>
     </form>     
 <div id="result" class="w-[50%] w-[99%] overflow-auto">
     <!-- Tab Navigation -->
@@ -69,17 +76,19 @@
 </div>
 
 <div>
-    </section> 
+</section> 
+
 </body>
 <script>
+    var TEMPLATE_NAME = "{{ page_info.user_info.template_name}}"
     var formFlags = {
         vuLogx: false,
         vuBJM: false,
         vuInfra: false,
         vuTraces: false,
         vuCoreML: false,
-        DataRetention: true,
-        GeneralInputs: true
+        DataRetention: false,
+        GeneralInputs: false
     };
 
     function toggle_form(form_name) {
@@ -92,6 +101,7 @@
         } else {
             formSection.style.display = "none"; // Hide the section
             setInputsRequired(formSection, false); // Remove required from inputs
+            resetInputValues(formSection); // Reset input values
         }
         
         // Toggle the flag in formFlags
@@ -136,34 +146,33 @@
 
         // Enable or disable the submit button based on the validity of the inputs
         $('#main_form').prop('disabled', !isAnyInputValid);
-        
+        $('#save_inputs').prop('disabled', !isAnyInputValid);
         // Toggle button styles based on state
         if (isAnyInputValid) {
             $('#main_form').removeClass('btn-disabled').addClass('btn-enabled');
+            $('#save_inputs').removeClass('btn-disabled').addClass('btn-enabled');
         } else {
             $('#main_form').removeClass('btn-enabled').addClass('btn-disabled');
+            $('#save_inputs').removeClass('btn-enabled').addClass('btn-disabled');
         }
     }
 
     $('input').on('input change', function() {
         checkSubmitButton(); // Check button validity on input changes
     });
-
+    // Sending form data to the server
     $('#main_form').on('click', function(e) {
         e.preventDefault(); // Prevent default form submission
         var data = {}; // Initialize an empty object to store form data
         $('#loader').fadeIn('fast'); 
         // Loop over formFlags to gather data from selected sections
         for (var key in formFlags) {
-            if (formFlags[key]) {
                 // Serialize each section’s form data as an array of {name, value} objects
-                var formData = $(`#form-${key}`).serializeArray();
-                
+                var formData = $(`#form-${key}`).serializeArray();               
                 // Add each section to `data` with the required structure
                 data[key] = { "formData": formData };
-            }
         }
-    
+
         $.ajax({
             type: 'POST',
             url: '/calculate',
@@ -179,17 +188,45 @@
         });
     });
 
+
+    $('#save_inputs').on('click', function(e) {
+        e.preventDefault(); // Prevent default form submission
+        $('#loader').fadeIn('fast');
+        var data = {}; // Initialize an empty object to store form data 
+        // Loop over formFlags to gather data from selected sections
+        for (var key in formFlags) {
+                // Serialize each section’s form data as an array of {name, value} objects
+                var formData = $(`#form-${key}`).serializeArray();               
+                // Add each section to `data` with the required structure
+                data[key] = { "formData": formData };
+        }
+        $.ajax({
+            type: 'POST',
+            url: `/save_inputs/${TEMPLATE_NAME}`,
+            contentType: 'application/json', // Set content type to JSON
+            data: JSON.stringify(data), // Send data as a JSON string
+            success: function(response) {
+                $('#loader').fadeOut('slow');
+                showToast("Inputs saved successfully!");
+            },
+            error: function(xhr, status, error) {
+                $('#loader').fadeIn('slow');
+                console.error("AJAX Error: ", error); // Log any error
+            }
+        });
+    });
+
+
     // Result handling
     // Result for Service Level Sizing
     function getting_results() {
         $('#loader').fadeIn('fast');
-    
+       
         // Define both AJAX requests as promises
         const serviceLevelSizingRequest = $.ajax({
             type: 'GET',
             url: '/results/service_level_sizing',
         });
-    
         const finalSizingRequest = $.ajax({
             type: 'GET',
             url: '/results/final_sizing',
@@ -197,7 +234,7 @@
     
         // Execute both AJAX requests concurrently
         Promise.all([serviceLevelSizingRequest, finalSizingRequest])
-            .then((responses) => {
+            .then((responses) => {       
                 // Both requests were successful
                 const [serviceLevelResponse, finalSizingResponse] = responses;
                 $('#service_level_sizing_table').html(serviceLevelResponse);
@@ -211,6 +248,7 @@
                 $('#loader').fadeOut('slow');  // Hide the loader on error as well
             });
     }
+    
     
      // Tab functionality
      const final_sizing_tab = document.getElementById('final_sizing_tab');
@@ -235,5 +273,29 @@
      final_sizing_tab.addEventListener('click', () => main_activateTab(final_sizing_tab, final_sizing_table, service_level_sizing_table));
      service_level_sizing_tab.addEventListener('click', () => main_activateTab(service_level_sizing_tab, service_level_sizing_table, final_sizing_table));
     
+
+
+        // Declare an object to hold default values for each form section
+        var defaultValues = {};
+
+        // Store default values on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Loop through each form section to capture default values
+            $('form').find('input').each(function() {
+                const inputId = this.id;
+                const defaultValue = $(this).val(); // Get the initial value
+                defaultValues[inputId] = defaultValue; // Store in the defaultValues object
+            });
+        });
+
+        function resetInputValues(section) {
+            // Find all inputs in the section and reset their values
+            $(section).find('input').each(function() {
+                const inputId = this.id;
+                if (defaultValues[inputId] !== undefined) {
+                    $(this).val(defaultValues[inputId]); // Reset to the default value
+                }
+            });
+        }
 </script>
 </html>

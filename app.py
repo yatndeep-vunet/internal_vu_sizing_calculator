@@ -21,6 +21,8 @@ from database import (
     find_user_by_email,
     update_template_data,
     update_spreadsheet_id,
+    find_user_template_data,
+    update_template_data_by_frontend
 )
 from google_sheets import (
     make_copy_of_sheet,
@@ -33,7 +35,7 @@ from google_sheets import (
     get_sheet_data_with_sheet_name,
 )
 from tabulate import tabulate
-from helper_functions import load_and_collect_form_inputs, get_data_for_sheet_with_form
+from helper_functions import load_and_collect_form_inputs, get_data_for_sheet_with_form , map_form_values_db_template_values
 
 form_inputs = "./form_inputs/form_inputs.json"
 from dotenv import load_dotenv
@@ -271,13 +273,13 @@ def calculate_result():
     try:
         user_personal_info = get_user_info(session["access_token"])
         detail_user_info = find_user_by_email(email=user_personal_info["email"])
-        spreadsheet_id = detail_user_info[3]  
+        spreadsheet_id = detail_user_info[3]
         form_data = request.get_json()  # Parse JSON data
         print(form_data)
         gspread_client, drive_service, sheets_service = authorize_client()     
         if form_data is None:
             return jsonify({"message": "No data received."}), 400
-        print("Form Data from frontend:", form_data)  # Process form_data as needed
+        # print("Form Data from frontend:", form_data)  # Process form_data as needed
         print("Data is under processing ..............................................")
         # Actually what happens here is that we are getting the data from the frontend and then we are processing it
         # Process it to make it ready to be sent to the sheets
@@ -370,6 +372,25 @@ def node_sizing_summary_results():
         print(f"Results page error: {e}")
         return "An error occurred while fetching results. Please try again later.", 500
 
+@login_required
+@app.route("/save_inputs/<template_name>" , methods=["POST"])
+def save_inputs(template_name):
+    try:
+        user_personal_info = get_user_info(session["access_token"])
+        detail_user_info = find_user_by_email(email=user_personal_info["email"])
+        form_data = request.get_json()
+        print("Template Name:", template_name)
+        template_data_from_db = find_user_template_data(email=user_personal_info["email"], template_name=template_name)
+        if template_data_from_db:
+            print("Mapping form values to db template values")
+            mapped_data = map_form_values_db_template_values(form_data, template_data_from_db)
+            update_template_data_by_frontend(email=user_personal_info["email"], template_name=template_name, new_template_data=mapped_data)
+            return jsonify({"message": "Success"}), 200
+        else:
+            return jsonify({"message": "Failed to save inputs."}), 400
+    except Exception as e:
+        print(f"Save inputs error: {e}")
+        return jsonify({"message": "Failed to save inputs."}), 400
 
 @login_required
 @app.route("/logout")

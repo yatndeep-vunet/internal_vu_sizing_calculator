@@ -95,6 +95,7 @@ def write_json_to_file(client, spreadsheet_id, sheet_names):
 # Example usage
 client, _, _ = authorize_client()  # Ensure you have a function to authorize your client
 
-
-# sizing_sheet_names = ["vuBJM", "vuLogx"]
-# write_json_to_file(client, spreadsheet_id, sizing_sheet_names)
+spreadsheet_id = "1ntX-jpnNnfakFhjOdpyISky4IEfj4pA25NE9usUEewo"  # Replace with your spreadsheet ID
+# At a time we can only sync one sheet
+sizing_sheet_names = ["vuCoreML"]  # Replace with your sheet names
+write_json_to_file(client, spreadsheet_id, sizing_sheet_names)

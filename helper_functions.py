@@ -1,6 +1,5 @@
 import json
 
-
 def load_and_collect_form_inputs(file_path):
     """Load JSON data from a specified file and collect form inputs into a dictionary."""
     try:
@@ -66,10 +65,10 @@ def get_form_data_values(sheet_name, data):
             [
                 (
                     True
-                    if item["value"] == "on"
+                    if item["value"] == "TRUE"
                     else (
                         False
-                        if item["value"] == "off"
+                        if item["value"] == "FALSE"
                         else (
                             int(item["value"])
                             if item["value"].isdigit()  # Convert string to int
@@ -164,82 +163,42 @@ def get_data_for_sheet_with_form(data):
             continue
         sheets_data.append(prepare_data_for_sheets(sheet_name, data=data))
         general_input_sheet_data, data_retention_sheet_data = prepare_general_input_data_for_sheets(data=data)
-        sheets_data.append(general_input_sheet_data)
-        sheets_data.append(data_retention_sheet_data)
+    sheets_data.append(general_input_sheet_data)
+    sheets_data.append(data_retention_sheet_data)
     # Add the data for 'GeneralInputs' and 'DataRetention'
     return sheets_data
 
 
+def map_form_values_db_template_values(form_data, template_data):
+    # Ensure template_data is a dictionary
+    if isinstance(template_data, str):
+        template_data = json.loads(template_data)  # Parse JSON string to a dictionary
+
+    # Ensure template_data is indeed a dictionary
+    if not isinstance(template_data, dict):
+        raise ValueError("template_data should be a dictionary.")
+
+    # Iterate through the new structured form_data
+    for section, section_data in form_data.items():
+        if "formData" in section_data:
+            for item in section_data["formData"]:
+                # Each item has a 'name' and a 'value'
+                component_name = item["name"]
+                value = item["value"]
+
+                # Split the component name to find the correct key
+                key = component_name.split("_", 1)  # Split on the first underscore
+
+                # Check if section exists in template_data and assign value
+                if len(key) == 2:
+                    sub_section, key_name = key
+                    if sub_section in template_data and key_name in template_data[sub_section]:
+                        template_data[sub_section][key_name] = value
+                    else:
+                        print(f"Component '{component_name}' not found in template data.")
+                else:
+                    print(f"Invalid component name format: '{component_name}'")
+
+    return template_data
 
 
-
-
-
-
-
-
-
-
-
-# form_data = {
-#     "GeneralInputs": {
-#         "formData": [
-#             {"name": "GeneralInputs_High Availability ?", "value": "on"},
-#             {"name": "GeneralInputs_Num of vuSmartMaps users", "value": "1000"},
-#             {"name": "GeneralInputs_Num Alerts", "value": "1000"},
-#         ]
-#     },
-#     "DataRetention": {
-#         "formData": [
-#             {"name": "DateRetention_Hot Search (Days)", "value": "0"},
-#             {"name": "DateRetention_Warm Search (Days)", "value": "0"},
-#             {"name": "DateRetention_Cold Search (Days)", "value": "0"},
-#             {"name": "DateRetention_Summarized Data Retention (Days)", "value": "100"},
-#         ]
-#     },
-# }
-
-
-# # # Example usage
-# #print(prepare_general_input_data_for_sheets(form_data))
-# # general_input_sheet_data, data_retention_sheet_data = prepare_general_input_data_for_sheets(form_data)
-# # print(general_input_sheet_data)
-# # print(data_retention_sheet_data)
-
-
-# some_form_data = {
-#     "vuLogx": {
-#         "formData": [
-#             {"name": "vuLogx_Syslog Size per day(GB)", "value": "100"},
-#             {"name": "vuLogx_App Logs Size per day(GB)", "value": "100"},
-#             {"name": "vuLogx_Raw Logs storage", "value": "off"},
-#         ]
-#     },
-#     "vuCoreML": {
-#         "formData": [
-#             {"name": "vuCoreML_Num of Signals", "value": "100"},
-#             {"name": "vuCoreML_Approx Num dimensions per signal", "value": "200"},
-#             {"name": "vuCoreML_Num Fields Per Signal", "value": "200"},
-#             {"name": "vuCoreML_LLM based Analytics", "value": "on"},
-#         ]
-#     },
-#      "GeneralInputs": {
-#         "formData": [
-#             {"name": "GeneralInputs_High Availability ?", "value": "on"},
-#             {"name": "GeneralInputs_Num of vuSmartMaps users", "value": "1000"},
-#             {"name": "GeneralInputs_Num Alerts", "value": "1000"},
-#         ]
-#     },
-#     "DataRetention": {
-#         "formData": [
-#             {"name": "DateRetention_Hot Search (Days)", "value": "0"},
-#             {"name": "DateRetention_Warm Search (Days)", "value": "0"},
-#             {"name": "DateRetention_Cold Search (Days)", "value": "0"},
-#             {"name": "DateRetention_Summarized Data Retention (Days)", "value": "100"},
-#         ]
-#     }
-# }
-
-
-
-#print(get_data_for_sheet_with_form(some_form_data))
