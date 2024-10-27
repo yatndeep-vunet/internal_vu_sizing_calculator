@@ -1,5 +1,6 @@
 
 <!-- Tab Navigation -->
+<section>
 <div class="mx-auto w-[95%] bg-gray-700 text-white">
     <div class="flex justify-around py-4 cursor-pointer">
         <div id="k8s_tab" class="tab-title text-center text-lg font-bold py-2 px-5 bg-blue-600 rounded shadow-xl" onclick="activateTab('k8s_tab', 'k8s_table', 'vms_table')">
@@ -13,7 +14,8 @@
 
 <!-- First Table -->
 <div id="k8s_table" class="tab-content my-4">
-    <table class="mx-auto mb-8 w-[95%]">
+   
+    <table class="mx-auto mb-8 w-[95%]" id="k8s_table">
         <thead>
             <tr>
                 {% for header in headers_1 %}
@@ -35,7 +37,7 @@
 
 <!-- Second Table -->
 <div id="vms_table" class="tab-content my-4 hidden">
-    <table class="mx-auto w-[95%]">
+    <table class="mx-auto w-[95%]" id="vms_table">
         <thead>
             <tr>
                 {% for header in headers_2 %}
@@ -54,6 +56,9 @@
         </tbody>
     </table>
 </div>
+<button class="bg-blue-600 text-white px-5 py-2 rounded mx-[3%]" onclick="exportToExcel()">Export to Excel</button>
+</section>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.16.9/xlsx.full.min.js"></script>
 <script>
     // Tab functionality
   
@@ -80,6 +85,29 @@
         contentToShow.classList.remove('hidden');
         contentToHide.classList.add('hidden');
     }
+   
+
+
+    function exportToExcel() {
+        // Get both tables
+        let k8s_table = document.getElementById("k8s_table");
+        let vms_table = document.getElementById("vms_table");
+    
+        // Create a new workbook
+        let workbook = XLSX.utils.book_new();
+    
+        // Convert each table to a sheet and append it to the workbook
+        let k8s_sheet = XLSX.utils.table_to_sheet(k8s_table);
+        XLSX.utils.book_append_sheet(workbook, k8s_sheet, "Sizing on K8S");
+    
+        let vms_sheet = XLSX.utils.table_to_sheet(vms_table);
+        XLSX.utils.book_append_sheet(workbook, vms_sheet, "Sizing on VMs");
+    
+        // Save the workbook
+        XLSX.writeFile(workbook, "sizing_data.xlsx");
+    }
+    
+
 </script>
 </body>
 </html>

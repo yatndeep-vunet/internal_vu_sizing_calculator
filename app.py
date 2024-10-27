@@ -149,7 +149,7 @@ def welcome():
                 template_data = {}  # Handle case where the value is empty or None
 
             page_info = {
-                "title": "Welcome",
+                "title": "vuSizing Calculator",
                 "description": "Welcome to the application.",
                 "user_info": {
                     "user_personal_info": user_personal_info,
@@ -161,7 +161,11 @@ def welcome():
             return render_template("welcome.html", page_info=page_info)
 
         # If access token is not present or user info is invalid, render with None
-        return render_template("welcome.html", page_info=None)
+        page_info = {
+                "title": "vuSizing Calculator",
+                "description": "Welcome to the application.",
+            }
+        return render_template("welcome.html", page_info=page_info)
 
     except Exception as e:
         print(f"Welcome page error: {e}")
@@ -341,13 +345,13 @@ def service_level_sizing_results():
 
 
 @app.route("/results/final_sizing")
-@login_required
 def node_sizing_summary_results():
     try:
         client, *other_values = authorize_client()
         user_personal_info = get_user_info(session["access_token"])
         detail_user_info = find_user_by_email(email=user_personal_info["email"])
         spreadsheet_id = detail_user_info[3]
+      
         # Get data for the first table
         data = get_sheet_data_with_sheet_name(
             client=client,
@@ -358,7 +362,7 @@ def node_sizing_summary_results():
         # There are 2 tables in the sheet, so extract data for both
 
         headers_1, rows_1 = data[2], data[3:8]
-        headers_2, rows_2 = data[3], data[11:18]
+        headers_2, rows_2 = data[11], data[12:18]
 
         # Render template with both tables' headers and rows
         return render_template(
