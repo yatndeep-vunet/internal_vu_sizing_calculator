@@ -17,9 +17,8 @@
                 <p>No templates available.</p>
             {% endif %}
             </div>
-           
        
-        <form action="/create_template" method="POST" class="flex flex-col space-y-4 w-fit w-[60%] border-2 border-gray-500 mx-auto p-5">
+        <form action="/create_template" method="POST" class="flex flex-col space-y-4 w-fit w-[60%] border border-gray-300 mx-auto p-5 rounded">
             <p class="text-2xl">Create a new template:</p>
             <label for="template_name">Template Name:</label>
             <input type="text" id="template_name" name="template_name" required class="border-2 border-gray-400 rounded">

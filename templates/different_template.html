@@ -1,6 +1,6 @@
 
 {% include 'partials/header.html' %}
-  <section class="flex justify-between lg:flex-row flex-col">
+<section>
     <form method="POST" class="lg:w-[50%] px-5 w-[99%] shadow-2xl rounded p-2 overflow-y-scroll h-[90vh]" id="dataForm">
         {% for sheet_name, fields in page_info.data.items() %}
             <div class="lg:w-[30%] flex justify-between my-4 w-[95%] ">
@@ -51,31 +51,6 @@
         <button type="submit" class="w-full px-5 py-2 my-4 rounded btn-disabled" id="main_form" disabled>Submit</button>
         <button class="w-full px-5 py-2 my-4 rounded btn-disabled" id="save_inputs" disabled>Save Inputs</button>
     </form>     
-<div id="result" class="w-[50%] w-[99%] overflow-auto">
-    <!-- Tab Navigation -->
-<h1 class="text-center text-2xl font-bold my-4">Sizing Information</h1>
-<div class="mx-auto w-[95%] bg-gray-700 text-white">
-    <div class="flex justify-around py-4 cursor-pointer">
-        <div id="final_sizing_tab" class="tab-title text-center text-lg font-bold py-2 px-5 bg-blue-600 rounded shadow-xl">
-           Final Sizing
-        </div>
-        <div id="service_level_sizing_tab" class="tab-title text-center text-lg font-bold py-2 px-5 rounded shadow-xl">
-            Service Level Sizing
-        </div>
-    </div>
-</div>
-
-<!-- First Table -->
-<div id="final_sizing_table" class="tab-content my-4">
-   
-</div>
-
-<!-- Second Table -->
-<div id="service_level_sizing_table" class="tab-content my-4 hidden">
-   
-</div>
-
-<div>
 </section> 
 
 </body>
@@ -169,7 +144,6 @@
     $('#main_form').on('click', function(e) {
         e.preventDefault(); // Prevent default form submission
         var data = {}; // Initialize an empty object to store form data
-        var form_status = {};
         $('#loader').fadeIn('fast'); 
         // Loop over formFlags to gather data from selected sections
         for (var key in formFlags) {
@@ -177,21 +151,15 @@
                 var formData = $(`#form-${key}`).serializeArray();               
                 // Add each section to `data` with the required structure
                 data[key] = { "formData": formData };
-                form_status[key] = formFlags[key];
         }
-        let payload = {
-            "template_name": TEMPLATE_NAME,
-            "form_data": data,
-            "form_status": form_status
-        }
+
         $.ajax({
             type: 'POST',
             url: '/calculate',
             contentType: 'application/json', // Set content type to JSON
-            data: JSON.stringify(payload), // Send data as a JSON string
+            data: JSON.stringify(data), // Send data as a JSON string
             success: function(response) {
-                $('#loader').fadeOut('slow');
-                getting_results();
+                //getting_results();
             },
             error: function(xhr, status, error) {
                 $('#loader').fadeIn('slow');
@@ -200,29 +168,23 @@
         });
     });
 
+
     $('#save_inputs').on('click', function(e) {
         e.preventDefault(); // Prevent default form submission
         $('#loader').fadeIn('fast');
         var data = {}; // Initialize an empty object to store form data 
-        var form_status = {};
         // Loop over formFlags to gather data from selected sections
         for (var key in formFlags) {
                 // Serialize each section’s form data as an array of {name, value} objects
                 var formData = $(`#form-${key}`).serializeArray();               
                 // Add each section to `data` with the required structure
                 data[key] = { "formData": formData };
-                form_status[key] = formFlags[key];
-        }
-        let payload = {
-            "template_name": TEMPLATE_NAME,
-            "form_data": data,
-            "form_status": form_status
         }
         $.ajax({
             type: 'POST',
             url: `/save_inputs/${TEMPLATE_NAME}`,
             contentType: 'application/json', // Set content type to JSON
-            data: JSON.stringify(payload), // Send data as a JSON string
+            data: JSON.stringify(data), // Send data as a JSON string
             success: function(response) {
                 $('#loader').fadeOut('slow');
                 showToast("Inputs saved successfully!");
@@ -237,60 +199,6 @@
 
     // Result handling
     // Result for Service Level Sizing
-    function getting_results() {
-        $('#loader').fadeIn('fast');
-       
-        // Define both AJAX requests as promises
-        const serviceLevelSizingRequest = $.ajax({
-            type: 'GET',
-            url: '/results/service_level_sizing',
-        });
-        const finalSizingRequest = $.ajax({
-            type: 'GET',
-            url: '/results/final_sizing',
-        });
-    
-        // Execute both AJAX requests concurrently
-        Promise.all([serviceLevelSizingRequest, finalSizingRequest])
-            .then((responses) => {       
-                // Both requests were successful
-                const [serviceLevelResponse, finalSizingResponse] = responses;
-                $('#service_level_sizing_table').html(serviceLevelResponse);
-                $('#final_sizing_table').html(finalSizingResponse);
-                $('#loader').fadeOut('slow');  // Hide the loader when both requests are complete
-                console.log("All requests completed successfully.");
-            })
-            .catch((error) => {
-                // One or both requests failed
-                console.error("AJAX Error: ", error);
-                $('#loader').fadeOut('slow');  // Hide the loader on error as well
-            });
-    }
-    
-    
-     // Tab functionality
-     const final_sizing_tab = document.getElementById('final_sizing_tab');
-     const service_level_sizing_tab = document.getElementById('service_level_sizing_tab');
-     const final_sizing_table = document.getElementById('final_sizing_table');
-     const service_level_sizing_table = document.getElementById('service_level_sizing_table');
- 
-     // Function to switch tabs
-     function main_activateTab(tab, contentToShow, contentToHide) {
-         // Reset all tabs
-         final_sizing_tab.classList.remove('bg-blue-600');
-         service_level_sizing_tab.classList.remove('bg-blue-600');
-         // Highlight active tab
-         tab.classList.add('bg-blue-600');
- 
-         // Show and hide tables
-         contentToShow.classList.remove('hidden');
-         contentToHide.classList.add('hidden');
-     }
- 
-     // Event listeners for tabs
-     final_sizing_tab.addEventListener('click', () => main_activateTab(final_sizing_tab, final_sizing_table, service_level_sizing_table));
-     service_level_sizing_tab.addEventListener('click', () => main_activateTab(service_level_sizing_tab, service_level_sizing_table, final_sizing_table));
-    
 
 
         // Declare an object to hold default values for each form section

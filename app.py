@@ -214,12 +214,25 @@ def create_template():
             )
         else:
             spreadsheet_id = detail_user_info[2]
+        
+        default_form_status ={
+                'vuLogx': False, 
+                'vuBJM': False, 
+                'vuInfra': False, 
+                'vuTraces': False,
+                'vuCoreML': False, 
+                'DataRetention': True, 
+                'GeneralInputs': True
+                }
 
         new_template_data = {
-            "template_name": template_name,
-            "template_data": load_and_collect_form_inputs(form_inputs),
-        }
-
+                "template_name": template_name,
+                "template_data":{
+                    "form_status" : default_form_status,
+                    "form_data" : load_and_collect_form_inputs(form_inputs)
+                }   
+            }
+        
         # Append new data to existing spreadsheet data
         updated_template_data = existing_template_data + [new_template_data]
 
@@ -271,6 +284,34 @@ def template(template_name):
             500,
         )
 
+@app.route("/different_template/<template_name>")
+@login_required
+def different_template(template_name):
+    try:
+        user_personal_info = get_user_info(session["access_token"])
+        # detail_user_info = find_user_by_email(email=user_personal_info["email"])
+
+        # Get the form details from the JSON file
+        with open(form_inputs) as f:
+            form_data = json.load(f)
+
+        page_info = {
+            "title": f"vuSizing Calc - {template_name}",
+            "description": "Template page",
+            "user_info": {
+                "user_personal_info": user_personal_info,
+                "template_name": template_name,
+            },
+            "data": form_data,
+        }
+        return render_template("different_template.html", page_info=page_info)
+    except Exception as e:
+        print(f"Template page error: {e}")
+        return (
+            "An error occurred while fetching the template. Please try again later.",
+            500,
+        )
+
 
 @app.route("/calculate", methods=["POST"])
 def calculate_result():
@@ -278,8 +319,9 @@ def calculate_result():
         user_personal_info = get_user_info(session["access_token"])
         detail_user_info = find_user_by_email(email=user_personal_info["email"])
         spreadsheet_id = detail_user_info[3]
-        form_data = request.get_json()  # Parse JSON data
-        print(form_data)
+        data = request.get_json()  # Parse JSON data
+        form_status = data.get('form_status')
+        form_data = data.get('form_data')
         gspread_client, drive_service, sheets_service = authorize_client()     
         if form_data is None:
             return jsonify({"message": "No data received."}), 400
@@ -382,13 +424,22 @@ def save_inputs(template_name):
     try:
         user_personal_info = get_user_info(session["access_token"])
         detail_user_info = find_user_by_email(email=user_personal_info["email"])
-        form_data = request.get_json()
-        print("Template Name:", template_name)
+        data = request.get_json()
+        form_data = data.get("form_data")
+        form_status = data.get("form_status")
+       
         template_data_from_db = find_user_template_data(email=user_personal_info["email"], template_name=template_name)
+
         if template_data_from_db:
             print("Mapping form values to db template values")
             mapped_data = map_form_values_db_template_values(form_data, template_data_from_db)
-            update_template_data_by_frontend(email=user_personal_info["email"], template_name=template_name, new_template_data=mapped_data)
+    
+            new_template_data = {
+                "form_status" : form_status,
+                "form_data" : mapped_data
+            }
+          
+            update_template_data_by_frontend(email=user_personal_info["email"], template_name=template_name, new_template_data=new_template_data)
             return jsonify({"message": "Success"}), 200
         else:
             return jsonify({"message": "Failed to save inputs."}), 400

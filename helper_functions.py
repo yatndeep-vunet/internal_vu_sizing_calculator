@@ -1,5 +1,6 @@
 import json
 
+
 def load_and_collect_form_inputs(file_path):
     """Load JSON data from a specified file and collect form inputs into a dictionary."""
     try:
@@ -15,7 +16,7 @@ def load_and_collect_form_inputs(file_path):
 
             for field in fields:
                 form_input = field["form_input"]
-                sheet_data[form_input] = ""  # Add form_input with empty string value
+                sheet_data[form_input] = field["value"]  # Add form_input with its value
 
             collected_data[sheet_name] = (
                 sheet_data  # Add the sheet data to the collected data
@@ -200,5 +201,4 @@ def map_form_values_db_template_values(form_data, template_data):
                     print(f"Invalid component name format: '{component_name}'")
 
     return template_data
-
 

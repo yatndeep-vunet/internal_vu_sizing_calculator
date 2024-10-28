@@ -151,8 +151,12 @@ def find_user_template_data(email, template_name):
                 # Search for the specified template name
                 for template in templates:
                     if template["template_name"] == template_name:
-                        return template["template_data"]  # Return the found template data
+                        template_data = template["template_data"]
+                        return template_data["form_data"]  # Return the form_data if found
             except json.JSONDecodeError:
                 print("Error decoding JSON data.")
         
     return None  # Return None if user not found or template not found
+
+
+print(find_user_template_data("yatndeep@vunetsystems.com","Shree Ganesh"))
