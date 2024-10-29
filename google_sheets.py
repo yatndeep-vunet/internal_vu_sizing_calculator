@@ -4,6 +4,7 @@ from googleapiclient.discovery import build
 import json
 import os
 import dotenv
+from tabulate import tabulate
 
 dotenv.load_dotenv()
 # Define the scope for Google Sheets API and Google Drive API
@@ -273,3 +274,52 @@ def batch_update_sheet(service, spreadsheet_id, data):
     except Exception as e:
         print(f"Error updating sheet: {e}")
         return None
+
+def list_spreadsheets(drive_service):
+            """
+            List all spreadsheets accessible by the service account.
+
+            Parameters:
+            - drive_service: Authorized Google Drive API client.
+
+            Returns:
+            - A list of dictionaries, each containing:
+                - 'name': The name of the spreadsheet.
+                - 'id': The ID of the spreadsheet.
+            """
+            try:
+                # Query to list only Google Sheets files
+                query = "mimeType='application/vnd.google-apps.spreadsheet'"
+                results = drive_service.files().list(q=query).execute()
+                items = results.get('files', [])
+
+                spreadsheets = [{'name': item['name'], 'id': item['id']} for item in items]
+
+                return spreadsheets
+            except Exception as e:
+                print(f"Error listing spreadsheets: {e}")
+                return []
+
+# client, drive_service, sheets_service = authorize_client()
+
+# # List all spreadsheets
+# spreadsheets = list_spreadsheets(drive_service)
+
+# # Prepare data for tabulation
+# table_data = [[index + 1, sheet['name'], sheet['id']] for index, sheet in enumerate(spreadsheets)]
+
+# # Print the table
+# print(tabulate(table_data, headers=["S. No.", "Spreadsheet Name", "Spreadsheet ID"], tablefmt="grid"))
+
+# def delete_spreadsheets(drive_service, spreadsheet_ids):
+#     """Delete multiple spreadsheets by their IDs."""
+#     for spreadsheet_id in spreadsheet_ids:
+#         try:
+#             drive_service.files().delete(fileId=spreadsheet_id).execute()
+#             print(f"Spreadsheet with ID {spreadsheet_id} deleted successfully.")
+#         except Exception as e:
+#             print(f"Error deleting spreadsheet with ID {spreadsheet_id}: {e}")
+#             continue
+
+
+# delete_spreadsheets(drive_service, spreadsheet_ids_to_delete)
