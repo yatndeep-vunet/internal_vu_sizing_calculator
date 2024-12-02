@@ -33,12 +33,16 @@ from google_sheets import (
     get_form_details,
     batch_update_sheet,
     get_sheet_data_with_sheet_name,
+    delete_spreadsheets,
+    batch_get_sheet_data
 )
 from tabulate import tabulate
 from helper_functions import load_and_collect_form_inputs, get_data_for_sheet_with_form , map_form_values_db_template_values
 
 form_inputs = "./form_inputs/form_inputs.json"
 from dotenv import load_dotenv
+import time
+from threading import Lock
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(24)
@@ -207,6 +211,7 @@ def create_template():
             spreadsheet_id = make_copy_of_sheet(
                 drive_service, user_personal_info["email"]
             )
+            
             update_spreadsheet_id(
                 email=user_personal_info["email"],
                 spreadsheet_id=spreadsheet_id,
@@ -275,6 +280,7 @@ def template(template_name):
                 "template_name": template_name,
             },
             "data": form_data,
+            "table_data": None
         }
         return render_template("template.html", page_info=page_info)
     except Exception as e:
@@ -283,35 +289,6 @@ def template(template_name):
             "An error occurred while fetching the template. Please try again later.",
             500,
         )
-
-@app.route("/different_template/<template_name>")
-@login_required
-def different_template(template_name):
-    try:
-        user_personal_info = get_user_info(session["access_token"])
-        # detail_user_info = find_user_by_email(email=user_personal_info["email"])
-
-        # Get the form details from the JSON file
-        with open(form_inputs) as f:
-            form_data = json.load(f)
-
-        page_info = {
-            "title": f"vuSizing Calc - {template_name}",
-            "description": "Template page",
-            "user_info": {
-                "user_personal_info": user_personal_info,
-                "template_name": template_name,
-            },
-            "data": form_data,
-        }
-        return render_template("different_template.html", page_info=page_info)
-    except Exception as e:
-        print(f"Template page error: {e}")
-        return (
-            "An error occurred while fetching the template. Please try again later.",
-            500,
-        )
-
 
 @app.route("/calculate", methods=["POST"])
 def calculate_result():
@@ -330,7 +307,6 @@ def calculate_result():
         # Actually what happens here is that we are getting the data from the frontend and then we are processing it
         # Process it to make it ready to be sent to the sheets
         processed_data_for_sheets = get_data_for_sheet_with_form(form_data)
-        print(processed_data_for_sheets)
         print(
             "Data processed and ready to sent to sheets..............................."
         )
@@ -341,82 +317,53 @@ def calculate_result():
                 data=processed_data_for_sheets,
             )
         )
-        return jsonify({"message": "Success"}), 200
+        result = over_all_result(spreadsheet_id)
+        return jsonify({"message": "Success" , "result":result}), 200
     except Exception as e:
         print(f"Calculate result error: {e}")
         return jsonify({"message": "Failed to calculate result."}), 400
 
 
-@app.route("/results/service_level_sizing")
-@login_required
-def service_level_sizing_results():
+@app.route("/over_all_result")
+def over_all_result(spreadsheet_id):
     try:
-        user_personal_info = get_user_info(session["access_token"])
-        detail_user_info = find_user_by_email(email=user_personal_info["email"])
-        client, *other_values = authorize_client()  # Adjust unpacking here
-        spreadsheet_id = detail_user_info[3]
+        sheets_service = authorize_client()[2]
+        sheet_ranges = ['Service Level Sizing!A1:F30', 'FINAL SIZING SUMMARY!A2:H18']
+        over_all_result = batch_get_sheet_data(client=sheets_service, spreadsheet_id=spreadsheet_id, sheet_ranges=sheet_ranges)
+        Service_Level_Sizing = over_all_result["'Service Level Sizing'"]
+        Final_Sizing_Summary = over_all_result["'FINAL SIZING SUMMARY'"]
 
-        data = get_sheet_data_with_sheet_name(
-            client=client,
-            spreadsheet_id=spreadsheet_id,
-            sheet_name="Service Level Sizing",
-        )
-        # print(data)
-        headers, rows = data[0], data[1:]
-        # First extract the data till column F
-        row_data_till_column_F = [row[:6] for row in data[1:]]
-        header_till_column_F = headers[:6]
+        service_level_headers = Service_Level_Sizing[0]
+        service_level_rows = Service_Level_Sizing[1:]
+        print(Final_Sizing_Summary)
+        final_sizing_header_1 = Final_Sizing_Summary[1][0:7]
+        final_sizing_rows_1 = [row[:-1] if i < 4 else row for i, row in enumerate(Final_Sizing_Summary[2:7])]
+        final_sizing_header_2 = Final_Sizing_Summary[10]
+        final_sizing_rows_2 = Final_Sizing_Summary[11:18]
 
-        # Now reorder the data to have columns in the order of A, E , B, C, F, D
-        new_order_indices = [0, 5, 1, 2, 3, 4]
-
-        # Reorder the headers and row data to match the new column order
-        reordered_headers = [header_till_column_F[i] for i in new_order_indices]
-        reordered_rows = [
-            [row[i] for i in new_order_indices] for row in row_data_till_column_F
-        ]
-
-        html_content = render_template(
-            "service_level_results.html", headers=reordered_headers, rows=reordered_rows
-        )
-        # print(tabulated_data)
-        return html_content
+        
+        table_data = {
+            "service_level_headers": service_level_headers,
+            "service_level_rows": service_level_rows,
+            "final_sizing_header_1": final_sizing_header_1,
+            "final_sizing_rows_1": final_sizing_rows_1,
+            "final_sizing_header_2": final_sizing_header_2,
+            "final_sizing_rows_2": final_sizing_rows_2
+        }
+        page_info = {
+            "title": f"vuSizing Calc",
+            "description": "Template page",
+            "user_info": {
+                "user_personal_info": "Not available",
+                "template_name": "Not available",
+            },
+            "table_data": table_data
+        }
+        return render_template("over_all_sizing.html", page_info=page_info)
     except Exception as e:
-        print(f"Results page error: {e}")
-        return "An error occurred while fetching results. Please try again later.", 500
+        print(f"Overall result error: {e}")
+        return jsonify({"message": "Failed to fetch overall result."}), 500
 
-
-@app.route("/results/final_sizing")
-def node_sizing_summary_results():
-    try:
-        client, *other_values = authorize_client()
-        user_personal_info = get_user_info(session["access_token"])
-        detail_user_info = find_user_by_email(email=user_personal_info["email"])
-        spreadsheet_id = detail_user_info[3]
-      
-        # Get data for the first table
-        data = get_sheet_data_with_sheet_name(
-            client=client,
-            spreadsheet_id=spreadsheet_id,
-            sheet_name="FINAL SIZING SUMMARY",
-        )
-
-        # There are 2 tables in the sheet, so extract data for both
-
-        headers_1, rows_1 = data[2], data[3:8]
-        headers_2, rows_2 = data[11], data[12:18]
-
-        # Render template with both tables' headers and rows
-        return render_template(
-            "final_sizing_results.html",
-            headers_1=headers_1,
-            rows_1=rows_1,
-            headers_2=headers_2,
-            rows_2=rows_2,
-        )
-    except Exception as e:
-        print(f"Results page error: {e}")
-        return "An error occurred while fetching results. Please try again later.", 500
 
 @login_required
 @app.route("/save_inputs/<template_name>" , methods=["POST"])
@@ -447,6 +394,55 @@ def save_inputs(template_name):
         print(f"Save inputs error: {e}")
         return jsonify({"message": "Failed to save inputs."}), 400
 
+request_count = 0
+lock = Lock()
+
+@app.route('/process_sheet')
+def process_sheet():
+    global request_count
+    
+    # Step 1: Acquire the lock to safely update request_count
+    with lock:
+        request_count += 1
+        # Check if we have processed 4 requests
+        if request_count % 4 == 0:
+            time.sleep(1)  # Introduce a 1-second delay
+
+    # Step 2: Authorize the client
+    client, drive_service, sheets_service = authorize_client()
+
+    # Step 3: Create a copy of the master spreadsheet
+    spreadsheet_id = "1ntX-jpnNnfakFhjOdpyISky4IEfj4pA25NE9usUEewo"
+
+    data = [
+        {'range': 'vuLogx!D3:D6', 'values': [[0.0], [0.0], ['True']]},
+        {'range': 'vuBJM!D3:D6', 'values': [[0.0], [0.0], [0.0]]},
+        {'range': 'vuInfra!D3:D16', 'values': [[0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.0], [0.1]]},
+        {'range': 'vuTraces!D3:D8', 'values': [[0.0], [0.0], [0.0], [0.0], ['']]},
+        {'range': 'vuCoreML!D3:D7', 'values': [[0.0], [0.0], [0.0], ['True']]},
+        {'range': 'General Inputs!C3:C6', 'values': [['True'], [0.0], [0], [0]]},
+        {'range': 'General Inputs!B11:E11', 'values': [[10, 10, 10, 10]]}
+    ]
+    
+    batch_update_sheet(sheets_service, spreadsheet_id=spreadsheet_id, data=data)
+    sheet_ranges = ['Service Level Sizing!A1:F30', 'FINAL SIZING SUMMARY!A2:H18']
+    # Step 4: Get the results from the specified sheets
+    data = batch_get_sheet_data(client=sheets_service , spreadsheet_id=spreadsheet_id, sheet_ranges=sheet_ranges)
+
+    # Process results as needed (e.g., format them)
+    results = {
+        "data":data
+    }
+
+
+    # Return the results
+    return jsonify({
+        "message": "Spreadsheet processed successfully.",
+        "results": results
+    }), 200
+
+
+
 @login_required
 @app.route("/logout")
 def logout():
@@ -470,4 +466,4 @@ def get_user_info(access_token):
 
 if __name__ == "__main__":
     create_table()
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=3389)

@@ -35,7 +35,7 @@ def make_copy_of_sheet(drive_service, user_name):
         "name": "Copy for " + user_name,
         "mimeType": "application/vnd.google-apps.spreadsheet",
     }
-    master_spreadsheet_id = os.getenv("MASTER_SPREADSHEET_ID")
+    master_spreadsheet_id = '1nWA74qBAlTtgCU1cipl_X93pzJaxEhxZlU7meyF6jWA'
 
     # Copy the master sheet
     file_copy = (
@@ -300,26 +300,50 @@ def list_spreadsheets(drive_service):
                 print(f"Error listing spreadsheets: {e}")
                 return []
 
-# client, drive_service, sheets_service = authorize_client()
+client, drive_service, sheets_service = authorize_client()
 
 # # List all spreadsheets
-# spreadsheets = list_spreadsheets(drive_service)
-
+spreadsheets = list_spreadsheets(drive_service)
+print(len(spreadsheets))
 # # Prepare data for tabulation
 # table_data = [[index + 1, sheet['name'], sheet['id']] for index, sheet in enumerate(spreadsheets)]
 
 # # Print the table
 # print(tabulate(table_data, headers=["S. No.", "Spreadsheet Name", "Spreadsheet ID"], tablefmt="grid"))
 
-# def delete_spreadsheets(drive_service, spreadsheet_ids):
-#     """Delete multiple spreadsheets by their IDs."""
-#     for spreadsheet_id in spreadsheet_ids:
-#         try:
-#             drive_service.files().delete(fileId=spreadsheet_id).execute()
-#             print(f"Spreadsheet with ID {spreadsheet_id} deleted successfully.")
-#         except Exception as e:
-#             print(f"Error deleting spreadsheet with ID {spreadsheet_id}: {e}")
-#             continue
+def delete_spreadsheets(drive_service, spreadsheet_ids):
+    """Delete multiple spreadsheets by their IDs."""
+    for spreadsheet_id in spreadsheet_ids:
+        try:
+            drive_service.files().delete(fileId=spreadsheet_id).execute()
+            print(f"Spreadsheet with ID {spreadsheet_id} deleted successfully.")
+        except Exception as e:
+            print(f"Error deleting spreadsheet with ID {spreadsheet_id}: {e}")
+            continue
 
 
 # delete_spreadsheets(drive_service, spreadsheet_ids_to_delete)
+
+
+def batch_get_sheet_data(client , spreadsheet_id, sheet_ranges):
+    """Retrieve data from specific sheets with defined ranges."""
+    try:
+        # Use batchGet to fetch data from all specified ranges in a single API request
+        service = client  # Authorize the Sheets API client
+        result = service.spreadsheets().values().batchGet(
+            spreadsheetId=spreadsheet_id,
+            ranges=sheet_ranges,
+            valueRenderOption="UNFORMATTED_VALUE"  # Retrieve raw values only
+        ).execute()
+        
+        # Extract data for each sheet range
+        sheet_data = {}
+        for value_range in result['valueRanges']:
+            sheet_name = value_range['range'].split('!')[0]
+            sheet_data[sheet_name] = value_range.get('values', [])
+        
+        return sheet_data
+    
+    except Exception as e:
+        print(f"Error retrieving data from specified sheet ranges '{sheet_ranges}': {e}")
+        return None

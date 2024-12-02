@@ -124,7 +124,7 @@ def prepare_general_input_data_for_sheets(data):
     if not general_input_data or not data_retention_data:
         return [], []
 
-    # Make Data retention data in the format of 'B10:E10'
+    # Make Data retention data in the format of 'B11:E11'
     data_retention_data = [item[0] for item in data_retention_data]
 
     # Update values less than 10 to be 10
@@ -132,7 +132,7 @@ def prepare_general_input_data_for_sheets(data):
 
     # Define ranges for Google Sheets API
     general_input_range = "General Inputs!C3:C6"
-    data_retention_range = "General Inputs!B10:E10"
+    data_retention_range = "General Inputs!B11:E11"
 
     # Prepare the dictionaries for Sheets API
     general_input_sheet_data = {

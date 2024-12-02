@@ -180,7 +180,7 @@
             "form_input": "Polling Interval (Seconds)",
             "help_text": "Data fetching frequency (Seconds)",
             "data_type": "Numeric",
-            "value": 0.1
+            "value": 180
         }
     ],
     "GeneralInputs": [

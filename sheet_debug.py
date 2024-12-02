@@ -12,12 +12,15 @@ from database import (
 from google_sheets import (
     make_copy_of_sheet,
     authorize_client,
+    get_sheet_data_with_sheet_name,
     get_sheets,
     get_sheet_data,
     update_existing_sheet,
     get_column_names,
     get_input_column_data,
     batch_update_sheet,
+    batch_get_sheet_data,
+    list_spreadsheets
 )
 from tabulate import tabulate
 from helper_functions import get_data_for_sheet_with_form
@@ -213,26 +216,35 @@ gspread_client, drive_service, sheets_service = authorize_client()
 # print(sheets_data)
 
 
-data = {
-    "vuLogx": {
-        "formData": [
-            {"name": "vuLogx_Syslog Size per day(GB)", "value": "100"},
-            {"name": "vuLogx_App Logs Size per day(GB)", "value": "100"},
-            {"name": "vuLogx_Raw Logs storage", "value": "off"},  # Should return True
-        ]
-    },
-    "vuCoreML": {
-        "formData": [
-            {"name": "vuCoreML_Num of Signals", "value": "100"},
-            {"name": "vuCoreML_Approx Num dimensions per signal", "value": "200"},
-            {"name": "vuCoreML_Num Fields Per Signal", "value": "200"},
-            {
-                "name": "vuCoreML_LLM based Analytics",
-                "value": "on",
-            },  # Should return True
-        ]
-    },
-}
+# data = {
+#     "vuLogx": {
+#         "formData": [
+#             {"name": "vuLogx_Syslog Size per day(GB)", "value": "100"},
+#             {"name": "vuLogx_App Logs Size per day(GB)", "value": "100"},
+#             {"name": "vuLogx_Raw Logs storage", "value": "off"},  # Should return True
+#         ]
+#     },
+#     "vuCoreML": {
+#         "formData": [
+#             {"name": "vuCoreML_Num of Signals", "value": "100"},
+#             {"name": "vuCoreML_Approx Num dimensions per signal", "value": "200"},
+#             {"name": "vuCoreML_Num Fields Per Signal", "value": "200"},
+#             {
+#                 "name": "vuCoreML_LLM based Analytics",
+#                 "value": "on",
+#             },  # Should return True
+#         ]
+#     },
+# }
 
 
-print(get_data_for_sheet_with_form(data))
+# print(get_data_for_sheet_with_form(data))
+#sheet_ranges = ['Service Level Sizing!A1:F30', 'FINAL SIZING SUMMARY!A2:H18']
+# spreadsheet_id = "1ntX-jpnNnfakFhjOdpyISky4IEfj4pA25NE9usUEewo"
+# data = batch_get_sheet_data(spreadsheet_id, sheet_ranges)
+# for sheet, values in data.items():
+#         print(f"Data from {sheet}:")
+#         print(values)
+
+
+

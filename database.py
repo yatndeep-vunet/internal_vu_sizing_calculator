@@ -34,6 +34,7 @@ def create_table():
         )
 
 
+
 def insert_user(name, email, spreadsheet_id, spreadsheet_name, template_data):
     with get_connection() as con:
         try:
@@ -159,4 +160,4 @@ def find_user_template_data(email, template_name):
     return None  # Return None if user not found or template not found
 
 
-print(find_user_template_data("yatndeep@vunetsystems.com","Shree Ganesh"))
+#print(find_user_template_data("yatndeep@vunetsystems.com","Shree Ganesh"))
