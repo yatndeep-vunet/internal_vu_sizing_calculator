@@ -215,7 +215,6 @@
     });
 
         // Declare an object to hold default values for each form section
-        var defaultValues = {};
 
         // Store default values on DOMContentLoaded
         document.addEventListener('DOMContentLoaded', () => {
@@ -226,7 +225,7 @@
                 defaultValues[inputId] = defaultValue; // Store in the defaultValues object
             });
         });
-
+        console.log(defaultValues);
         function resetInputValues(section) {
             // Find all inputs in the section and reset their values
             $(section).find('input').each(function() {

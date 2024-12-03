@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <section class="p-2 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+    <div class="flex justify-around items-center w-full">
+        <div class="w-[50%] mx-auto px-4 py-12 ">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-3xl font-bold text-blue-600">Existing Templates</h2>
+                <button class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-blue-800 transition duration-300">
+                    Create New Template
+                </button>
+            </div>
+    
+            <div class="bg-white rounded-xl shadow-md border-2 rounded border-blue-400 p-2 h-[65vh] overflow-y-auto">
+                <ul class="divide-y divide-gray-200">
+                    <li class="px-6 py-4 hover:bg-blue-50 transition duration-300 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Enterprise Cloud Deployment</h3>
+                            <p class="text-sm text-gray-500">Last Updated: Dec 1, 2024</p>
+                        </div>
+                        <a href="#" class="text-blue-500 hover:text-blue-700">View</a>
+                    </li>
+                    <li class="px-6 py-4 hover:bg-blue-50 transition duration-300 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">SMB Network Setup</h3>
+                            <p class="text-sm text-gray-500">Last Updated: Nov 15, 2024</p>
+                        </div>
+                        <a href="#" class="text-blue-500 hover:text-blue-700">View</a>
+                    </li>
+                    <li class="px-6 py-4 hover:bg-blue-50 transition duration-300 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Hybrid Infrastructure</h3>
+                            <p class="text-sm text-gray-500">Last Updated: Oct 30, 2024</p>
+                        </div>
+                        <a href="#" class="text-blue-500 hover:text-blue-700">View</a>
+                    </li>
+                    <li class="px-6 py-4 hover:bg-blue-50 transition duration-300 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">High Performance Computing</h3>
+                            <p class="text-sm text-gray-500">Last Updated: Nov 20, 2024</p>
+                        </div>
+                        <a href="#" class="text-blue-500 hover:text-blue-700">View</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+
+        <div class="w-[50%] mx-auto px-4 py-12">
+            <h1 class="text-4xl font-bold text-center text-blue-600 mb-12">How to Use VuNet Sizing Calculator</h1>
+            <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <!-- Step 1: Create Template -->
+                <div class="bg-white rounded-xl shadow-lg p-6 ">
+                    <div class="flex items-center mb-4">
+                        <span class="text-3xl font-bold text-blue-600 mr-4">1</span>
+                        <h2 class="text-2xl font-semibold text-gray-800">Create Template</h2>
+                    </div>
+                    <p class="text-gray-600">Design scenario-specific templates for different infrastructure sizing needs. Each template can be customized to represent unique deployment environments.</p>
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg">
+                        <strong class="text-blue-700">Example:</strong>
+                        <p class="text-sm text-gray-700">Cloud Deployment, Enterprise Setup, SMB Infrastructure</p>
+                    </div>
+                </div>
+    
+                <!-- Step 2: Input Data -->
+                <div class="bg-white rounded-xl shadow-lg p-6 ">
+                    <div class="flex items-center mb-4">
+                        <span class="text-3xl font-bold text-blue-600 mr-4">2</span>
+                        <h2 class="text-2xl font-semibold text-gray-800">Enter Input</h2>
+                    </div>
+                    <p class="text-gray-600">Input key parameters like user count, data volume, network traffic, and application requirements into your selected template.</p>
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg">
+                        <strong class="text-blue-700">Key Inputs:</strong>
+                        <ul class="text-sm text-gray-700 list-disc pl-4">
+                            <li>Total Users</li>
+                            <li>Monthly Data Volume</li>
+                            <li>Peak Concurrent Users</li>
+                        </ul>
+                    </div>
+                </div>
+    
+                <!-- Step 3: Export Results -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <span class="text-3xl font-bold text-blue-600 mr-4">3</span>
+                        <h2 class="text-2xl font-semibold text-gray-800">Export Results</h2>
+                    </div>
+                    <p class="text-gray-600">Generate comprehensive reports and export detailed sizing recommendations directly to Excel for further analysis and sharing.</p>
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg">
+                        <strong class="text-blue-700">Export Formats:</strong>
+                        <p class="text-sm text-gray-700">.xlsx, .csv with complete infrastructure recommendations</p>
+                    </div>
+                </div>
+    
+                <!-- Step 4: Save Template -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <span class="text-3xl font-bold text-blue-600 mr-4">4</span>
+                        <h2 class="text-2xl font-semibold text-gray-800">Save Template</h2>
+                    </div>
+                    <p class="text-gray-600">Store your input configurations as reusable templates for quick future sizing calculations across similar infrastructure scenarios.</p>
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg">
+                        <strong class="text-blue-700">Template Management:</strong>
+                        <p class="text-sm text-gray-700">Name, categorize, and quickly retrieve saved configurations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </section>
+</body>
+</html>

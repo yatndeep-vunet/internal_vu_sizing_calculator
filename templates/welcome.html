@@ -1,33 +1,122 @@
 
     {% include 'partials/header.html' %}
-    {% if page_info.user_info %}
-            {% if page_info.user_info.user_assets %}
-            <div class="w-[80%] mx-auto mt-10">
-                <p>Your Templates:</p>
-                <ul>
-                    {% for asset in page_info.user_info.user_assets %}
-                        <li>
-                            <a href="{{ url_for('template', template_name=asset['template_name']) }}" class="text-blue-600 underline">
-                                {{ asset['template_name'] }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>No templates available.</p>
-            {% endif %}
+    {% if page_info.user_info %}  
+            <section class="p-2 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+                <div class="flex flex-row-reverse justify-around w-full">
+                    <div class="w-[50%] mx-auto px-4 mt-[14.5vh]">
+                        <div class="bg-white rounded-xl shadow-md border-2 px-2 h-[42vh] overflow-y-auto">
+                            <div class="flex justify-between items-center mt-5">
+                                <h2 class="text-3xl font-bold text-blue-600">Existing Templates</h2>
+                                <button class="bg-gradient-to-r from-blue-500 to-blue-700 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-blue-800 transition duration-300">
+                                    Create New Template
+                                </button>
+                            </div>
+                            <div class="py-2 flex flex-col space-y-2">
+                            {% if page_info.user_info.user_assets %}
+                                {% for asset in page_info.user_info.user_assets %}
+                                <a href="{{ url_for('template', template_name=asset['template_name']) }}">
+                                <div class="px-6 py-4 hover:bg-blue-50 transition duration-300 flex justify-between items-center border border-gray-300 rounded my-2">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-800"> {{ asset['template_name'] }}</h3>
+                                            <p class="text-sm text-gray-500">Last Updated: Dec 1, 2024</p>
+                                        </div>
+                                        <div class="flex space-x-4 items-center">
+                                            <a href="{{ url_for('template', template_name=asset['template_name']) }}" class="text-blue-500 hover:text-blue-700">Open</a> 
+                                            <a href="#" class="text-red-500 hover:text-red-700">Delete</a>
+                                        </div>  
+                                </div>
+                            </a>   
+                            {% endfor %}
+                        </div>
+                            {% else %}
+                            <p>No templates available.</p>
+                        {% endif %}
+                        </div>
+                    </div>
+            
+            
+                    <div class="w-[50%] mx-auto px-4 py-12">
+                        <h1 class="text-4xl font-bold text-center text-blue-600 mb-12">How to Use VuNet Sizing Calculator</h1>
+                        <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                            <!-- Step 1: Create Template -->
+                            <div class="bg-white rounded-xl shadow-lg p-6 ">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-3xl font-bold text-blue-600 mr-4">1</span>
+                                    <h2 class="text-2xl font-semibold text-gray-800">Create Template</h2>
+                                </div>
+                                <p class="text-gray-600">Create scenario-specific templates for different infrastructure sizing needs. Each template can be customized to represent unique deployment environments.</p>
+                            </div>
+                
+                            <!-- Step 2: Input Data -->
+                            <div class="bg-white rounded-xl shadow-lg p-6 ">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-3xl font-bold text-blue-600 mr-4">2</span>
+                                    <h2 class="text-2xl font-semibold text-gray-800">Enter Input</h2>
+                                </div>
+                                <p class="text-gray-600">Open the Template created and Input key parameters like number of servers, daily volume of transaction, size of logs ,etc.</p>
+                            </div>
+                
+                            <!-- Step 3: Export Results -->
+                            <div class="bg-white rounded-xl shadow-lg p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-3xl font-bold text-blue-600 mr-4">3</span>
+                                    <h2 class="text-2xl font-semibold text-gray-800">Export Results</h2>
+                                </div>
+                                <p class="text-gray-600">Export the results to Excel document for further analysis and sharing.</p>
+                            </div>
+                
+                            <!-- Step 4: Save Inputs -->
+                            <div class="bg-white rounded-xl shadow-lg p-6">
+                                <div class="flex items-center mb-4">
+                                    <span class="text-3xl font-bold text-blue-600 mr-4">4</span>
+                                    <h2 class="text-2xl font-semibold text-gray-800">Save Inputs</h2>
+                                </div>
+                                <p class="text-gray-600">Save your input configurations in the template for future reference.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        <!-- Modal -->
+        <div id="createTemplateModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div class="bg-white w-[40%] mx-auto border rounded border-gray-300 p-4">
+                <div class="flex items-center justify-between">
+                    <div class="w-[98%] text-center">
+                        <p class="text-center text-2xl font-bold">Create Template</p>
+                    </div>
+                    <p id="close_form" class="text-2xl cursor-pointer">X</p>
+                </div>
+                <form action="/create_template" method="POST" class="flex flex-col space-y-4 mx-auto p-5 rounded">
+                    <label for="template_name">Template Name:</label>
+                    <input type="text" id="template_name" name="template_name" required class="border-2 border-gray-400 rounded p-2" placeholde="Please enter unique template name">
+                    <button type="submit" class="bg-blue-600 text-white px-5 py-2 w-full rounded">Create Template</button>
+                </form>   
             </div>
-       
-        <form action="/create_template" method="POST" class="flex flex-col space-y-4 w-fit w-[60%] border border-gray-300 mx-auto p-5 rounded">
-            <p class="text-2xl">Create a new template:</p>
-            <label for="template_name">Template Name:</label>
-            <input type="text" id="template_name" name="template_name" required class="border-2 border-gray-400 rounded">
-            <button type="submit" class="bg-blue-600 text-white px-5 py-2 w-full rounded">Create Template</button>
-        </form>      
-        </a>
+        </div>
+
+        <script>
+            document.querySelector('button').addEventListener('click', function() {
+                document.getElementById('createTemplateModal').classList.remove('hidden');
+            });
+
+            document.getElementById('close_form').addEventListener('click', function() {
+                document.getElementById('createTemplateModal').classList.add('hidden');
+            });
+        </script>     
 
     {% else %}
-        
+    <section class="p-2 bg-gradient-to-br from-blue-50 to-blue-100 min-h-screen">
+        <div class="flex justify-around items-center w-full">
+           <div class="">
+                <h1 class="text-6xl font-bold  leading-24">VuSizing Calculator</h1>
+                <br>
+                <p class="text-2xl">Calculate the sizing required to install vuSmartMaps in your environment.</p>
+           </div>
+           <div>
+            <img src="{{ url_for('static', filename='images/home-vmonitor.svg')}}"  class="h-[70vh] w-[60vh]">
+           </div>
+        </div>
+        </section>
     {% endif %}
 </body>
 
