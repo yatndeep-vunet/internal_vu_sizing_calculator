@@ -44,7 +44,7 @@ from dotenv import load_dotenv
 import time
 from threading import Lock
 
-app = Flask(__name__)
+app = Flask(__name__ ,static_folder='static',static_url_path='/internal/static')
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(24)
 
 # Load OAuth configuration
@@ -69,7 +69,7 @@ oauth_flow = (
 )
 
 
-@app.route("/signin")
+@app.route("/internal/signin")
 def signin():
     if not oauth_flow:
         return "OAuth configuration is missing. Cannot initiate signin.", 500
@@ -82,7 +82,7 @@ def signin():
     return redirect(authorization_url)
 
 
-@app.route("/callback")
+@app.route("/internal/callback")
 def oauth2callback():
     if not session.get("state") or session["state"] != request.args.get("state"):
         return "Invalid state parameter", 400
@@ -127,7 +127,7 @@ def login_required(f):
     return wrap
 
 
-@app.route("/")
+@app.route("/internal/home")
 def welcome():
     try:
         # Check if the access token is in the session
@@ -176,7 +176,7 @@ def welcome():
         return "An error occurred while loading the page. Please try again later.", 500
 
 
-@app.route("/create_template", methods=["POST"])
+@app.route("/internal/create_template", methods=["POST"])
 @login_required
 def create_template():
     try:
@@ -261,7 +261,7 @@ def create_template():
 # Getting the template name from the URL
 
 
-@app.route("/template/<template_name>")
+@app.route("/internal/template/<template_name>")
 @login_required
 def template(template_name):
     try:
@@ -290,7 +290,7 @@ def template(template_name):
             500,
         )
 
-@app.route("/calculate", methods=["POST"])
+@app.route("/internal/calculate", methods=["POST"])
 def calculate_result():
     try:
         user_personal_info = get_user_info(session["access_token"])
@@ -324,7 +324,7 @@ def calculate_result():
         return jsonify({"message": "Failed to calculate result."}), 400
 
 
-@app.route("/over_all_result")
+@app.route("/internal/over_all_result")
 def over_all_result(spreadsheet_id):
     try:
         sheets_service = authorize_client()[2]
@@ -335,7 +335,6 @@ def over_all_result(spreadsheet_id):
 
         service_level_headers = Service_Level_Sizing[0]
         service_level_rows = Service_Level_Sizing[1:]
-        print(Final_Sizing_Summary)
         final_sizing_header_1 = Final_Sizing_Summary[1][0:7]
         final_sizing_rows_1 = [row[:-1] if i < 4 else row for i, row in enumerate(Final_Sizing_Summary[2:7])]
         final_sizing_header_2 = Final_Sizing_Summary[10]
@@ -363,6 +362,8 @@ def over_all_result(spreadsheet_id):
     except Exception as e:
         print(f"Overall result error: {e}")
         return jsonify({"message": "Failed to fetch overall result."}), 500
+
+
 
 
 @login_required
@@ -444,11 +445,11 @@ def process_sheet():
 
 
 @login_required
-@app.route("/logout")
+@app.route("/internal/logout")
 def logout():
     session.clear()
     flash("You have been logged out.")
-    return redirect("/")
+    return redirect("/internal/home")
 
 
 def get_user_info(access_token):
@@ -462,6 +463,8 @@ def get_user_info(access_token):
     except requests.exceptions.RequestException as e:
         print(f"Failed to fetch user info: {e}")
         return None
+
+
 
 
 if __name__ == "__main__":

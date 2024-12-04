@@ -166,7 +166,7 @@
         }
         $.ajax({
             type: 'POST',
-            url: '/calculate',
+            url: '/internal/calculate',
             contentType: 'application/json', // Set content type to JSON
             data: JSON.stringify(payload), // Send data as a JSON string
             success: function(response) {
@@ -200,7 +200,7 @@
         }
         $.ajax({
             type: 'POST',
-            url: `/save_inputs/${TEMPLATE_NAME}`,
+            url: `/internal/save_inputs/${TEMPLATE_NAME}`,
             contentType: 'application/json', // Set content type to JSON
             data: JSON.stringify(payload), // Send data as a JSON string
             success: function(response) {
